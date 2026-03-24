@@ -124,14 +124,40 @@ export function useDeletePost() {
 
 // --- Comments ---
 
+/**
+ * Updates a specific comment in ALL cached comment pages for a post
+ * (covers both top-level and reply caches).
+ * `updater` receives the old comment and returns the new comment.
+ */
+function updateCommentInCache(queryClient, postId, commentId, updater) {
+  queryClient.setQueriesData(
+    { queryKey: ["comments", postId] },
+    (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        pages: old.pages.map((page) => ({
+          ...page,
+          data: {
+            ...page.data,
+            results: page.data.results.map((c) =>
+              c.id === commentId ? updater(c) : c
+            ),
+          },
+        })),
+      };
+    }
+  );
+}
+
 export function useComments(postId, parentId = null) {
   return useInfiniteQuery({
     queryKey: ["comments", postId, parentId],
-    queryFn: ({ pageParam = 1 }) =>
-      postsAPI.getComments(postId, { page: pageParam, parent_id: parentId }),
+    queryFn: ({ pageParam }) =>
+      postsAPI.getComments(postId, { cursor: pageParam, parent_id: parentId }),
     getNextPageParam: (lastPage) =>
-      lastPage.data.has_more ? lastPage.data.page + 1 : undefined,
-    initialPageParam: 1,
+      lastPage.data.has_more ? lastPage.data.next_cursor : undefined,
+    initialPageParam: undefined,
     enabled: !!postId,
   });
 }
@@ -153,8 +179,13 @@ export function useEditComment(postId) {
   return useMutation({
     mutationFn: ({ commentId, data }) =>
       postsAPI.editComment(postId, commentId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+    // Update content in cache — no refetch, no reorder
+    onSuccess: (_, { commentId, data }) => {
+      updateCommentInCache(queryClient, postId, commentId, (c) => ({
+        ...c,
+        content: data.content,
+        is_edited: true,
+      }));
     },
   });
 }
@@ -163,8 +194,13 @@ export function useDeleteComment(postId) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (commentId) => postsAPI.deleteComment(postId, commentId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+    onSuccess: (_, commentId) => {
+      // Mark deleted in cache — no reorder
+      updateCommentInCache(queryClient, postId, commentId, (c) => ({
+        ...c,
+        is_deleted: true,
+      }));
+      // Update post comment_count in feed
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       queryClient.invalidateQueries({ queryKey: ["myPosts"] });
     },
@@ -176,7 +212,27 @@ export function useReactToComment(postId) {
   return useMutation({
     mutationFn: ({ commentId, reaction_type }) =>
       postsAPI.reactToComment(postId, commentId, reaction_type),
-    onSuccess: () => {
+    // Optimistic update — apply immediately, no refetch
+    onMutate: ({ commentId, reaction_type }) => {
+      updateCommentInCache(queryClient, postId, commentId, (c) => {
+        const prev = c.user_reaction;
+        const toggling = prev === reaction_type;
+        return {
+          ...c,
+          user_reaction: toggling ? null : reaction_type,
+          like_count:
+            reaction_type === "like"
+              ? toggling ? c.like_count - 1 : c.like_count + 1
+              : prev === "like" ? c.like_count - 1 : c.like_count,
+          dislike_count:
+            reaction_type === "dislike"
+              ? toggling ? c.dislike_count - 1 : c.dislike_count + 1
+              : prev === "dislike" ? c.dislike_count - 1 : c.dislike_count,
+        };
+      });
+    },
+    // On error, refetch to restore correct server state
+    onError: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", postId] });
     },
   });
@@ -221,12 +277,21 @@ export function useReport() {
   });
 }
 
+function _invalidateAllFeeds(queryClient) {
+  queryClient.invalidateQueries({ queryKey: ["feed"] });
+  queryClient.invalidateQueries({ queryKey: ["rankedFeed"] });
+  queryClient.invalidateQueries({ queryKey: ["savedPosts"] });
+  queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+  queryClient.invalidateQueries({ queryKey: ["hashtagFeed"] });
+  queryClient.invalidateQueries({ queryKey: ["searchPosts"] });
+}
+
 export function useBlockUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId) => postsAPI.blockUser(userId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      _invalidateAllFeeds(queryClient);
       queryClient.invalidateQueries({ queryKey: ["blockedUsers"] });
     },
   });
@@ -237,7 +302,7 @@ export function useMuteUser() {
   return useMutation({
     mutationFn: (userId) => postsAPI.muteUser(userId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      _invalidateAllFeeds(queryClient);
       queryClient.invalidateQueries({ queryKey: ["mutedUsers"] });
     },
   });

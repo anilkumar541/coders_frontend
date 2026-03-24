@@ -10,6 +10,7 @@ export const authAPI = {
   forgotPassword: (data) => api.post("/auth/forgot-password/", data),
   resetPassword: (data) => api.post("/auth/reset-password/", data),
   resendVerification: (data) => api.post("/auth/resend-verification/", data),
+  updateProfile: (data) => api.patch("/auth/me/update/", data),
   uploadProfilePicture: (formData) =>
     api.patch("/auth/me/profile-picture/", formData, {
       headers: { "Content-Type": "multipart/form-data" },

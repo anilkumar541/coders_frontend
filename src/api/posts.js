@@ -26,6 +26,8 @@ export const postsAPI = {
   trackViews: (post_ids) => api.post("/posts/views/track/", { post_ids }),
 
   // Media
+  deletePostMedia: (postId, mediaId) =>
+    api.delete(`/posts/${postId}/media/${mediaId}/`),
   uploadMedia: (file, onProgress) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -42,9 +44,9 @@ export const postsAPI = {
   searchUsers: (q) => api.get("/posts/users/search/", { params: { q } }),
 
   // Comments
-  getComments: (postId, { page, parent_id } = {}) =>
+  getComments: (postId, { cursor, parent_id } = {}) =>
     api.get(`/posts/${postId}/comments/`, {
-      params: { ...(page && { page }), ...(parent_id && { parent_id }) },
+      params: { ...(cursor && { cursor }), ...(parent_id && { parent_id }) },
     }),
   createComment: (postId, data) =>
     api.post(`/posts/${postId}/comments/`, data),

@@ -1,24 +1,25 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Navbar from "./components/Navbar";
-import AuthInit from "./components/AuthInit";
-import ProtectedRoute from "./components/ProtectedRoute";
-import GuestRoute from "./components/GuestRoute";
-import AuthLayout from "./components/AuthLayout";
-import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import ChangePasswordPage from "./pages/ChangePasswordPage";
-import DashboardPage from "./pages/DashboardPage";
-import ProfilePage from "./pages/ProfilePage";
-import VerifyEmailPage from "./pages/VerifyEmailPage";
-import HashtagPage from "./pages/HashtagPage";
-import NotificationPreferencesPage from "./pages/NotificationPreferencesPage";
-import SearchPage from "./pages/SearchPage";
-import CreatePostPage from "./pages/CreatePostPage";
-import ErrorBoundary from "./components/ErrorBoundary";
+import Navbar from "./components/layout/Navbar";
+import AuthInit from "./components/layout/AuthInit";
+import ProtectedRoute from "./components/layout/ProtectedRoute";
+import GuestRoute from "./components/layout/GuestRoute";
+import AuthLayout from "./components/layout/AuthLayout";
+import HomePage from "./pages/home/HomePage";
+import LoginPage from "./pages/auth/LoginPage";
+import SignupPage from "./pages/auth/SignupPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import ChangePasswordPage from "./pages/auth/ChangePasswordPage";
+import DashboardPage from "./pages/dashboard/DashboardPage";
+import ProfilePage from "./pages/profile/ProfilePage";
+import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
+import HashtagPage from "./pages/posts/HashtagPage";
+import NotificationPreferencesPage from "./pages/settings/NotificationPreferencesPage";
+import SearchPage from "./pages/search/SearchPage";
+import CreatePostPage from "./pages/posts/CreatePostPage";
+import BlockedMutedPage from "./pages/settings/BlockedMutedPage";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,6 +74,7 @@ export default function App() {
               />
               <Route path="/create" element={<CreatePostPage />} />
               <Route path="/search" element={<SearchPage />} />
+              <Route path="/settings/privacy" element={<BlockedMutedPage />} />
             </Route>
           </Routes>
           </ErrorBoundary>

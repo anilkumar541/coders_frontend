@@ -67,6 +67,19 @@ export function useChangePassword() {
   });
 }
 
+export function useUpdateProfile() {
+  const { setUser } = useAuthStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => authAPI.updateProfile(data),
+    onSuccess: ({ data }) => {
+      setUser(data);
+      queryClient.setQueryData(["user"], data);
+    },
+  });
+}
+
 export function useUploadProfilePicture() {
   const { setUser } = useAuthStore();
   const queryClient = useQueryClient();
