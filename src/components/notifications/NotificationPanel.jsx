@@ -4,6 +4,8 @@ import {
   useMarkAllRead,
 } from "../../hooks/useNotifications";
 import { NotificationSkeleton } from "../common/Skeletons";
+import { getAvatarStyle } from "../../utils/avatarColor";
+import { Link } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -52,7 +54,7 @@ function NotificationItem({ notification, onMarkRead }) {
           className="w-8 h-8 rounded-full object-cover flex-shrink-0"
         />
       ) : (
-        <div className="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-[10px] font-medium flex-shrink-0">
+        <div className="w-8 h-8 rounded-full text-white flex items-center justify-center text-[10px] font-semibold shrink-0" style={getAvatarStyle(notification.actor.username)}>
           {initials}
         </div>
       )}
@@ -60,7 +62,13 @@ function NotificationItem({ notification, onMarkRead }) {
       {/* Content */}
       <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-900">
-          <span className="font-medium">{notification.actor.username}</span>{" "}
+          <Link
+            to={`/user/${notification.actor.id}`}
+            className="font-medium hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {notification.actor.username}
+          </Link>{" "}
           <span className="text-gray-600">{notification.text}</span>
         </p>
         <span className="text-[11px] text-gray-400">

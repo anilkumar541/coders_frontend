@@ -239,7 +239,7 @@ export default function EditPostModal({ post, onClose }) {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,video/*"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/quicktime,video/webm"
             multiple
             className="hidden"
             onChange={handleFileChange}

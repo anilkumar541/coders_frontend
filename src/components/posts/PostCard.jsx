@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useViewTracker } from "../../hooks/useViewTracker";
 import { formatCount } from "../../utils/formatCount";
-import { useDeletePost, useUndoDeletePost, useReactToPost, useSavePost, useBlockUser, useMuteUser, useBlockedUsers, useMutedUsers } from "../../hooks/usePosts";
+import { getAvatarStyle } from "../../utils/avatarColor";
+import { useDeletePost, useUndoDeletePost, useReactToPost, useSavePost, useBlockUser, useMuteUser, useBlockedUsers, useMutedUsers, useFollowUser } from "../../hooks/usePosts";
 import { useAuthStore } from "../../store/authStore";
 import MediaGallery from "./MediaGallery";
 import PostContent from "./PostContent";
@@ -22,7 +23,10 @@ import {
   Flag,
   Ban,
   VolumeX,
+  UserPlus,
+  UserMinus,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -58,12 +62,14 @@ export default function PostCard({ post, onDeleted }) {
   const saveMutation = useSavePost();
   const blockMutation = useBlockUser();
   const muteMutation = useMuteUser();
+  const followMutation = useFollowUser();
   const { data: blockedUsersData } = useBlockedUsers();
   const { data: mutedUsersData } = useMutedUsers();
   const [showReport, setShowReport] = useState(false);
 
   const isBlocked = blockedUsersData?.data?.some((u) => u.id === post.author.id) ?? false;
   const isMuted = mutedUsersData?.data?.some((u) => u.id === post.author.id) ?? false;
+  const isFollowing = post.is_following_author ?? false;
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -133,7 +139,7 @@ export default function PostCard({ post, onDeleted }) {
     : "?";
 
   return (
-    <div ref={cardRef} className="border border-gray-200 rounded-xl px-4 py-3">
+    <div ref={cardRef} className="border border-gray-200 rounded-xl px-4 pt-2 pb-3">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
@@ -144,14 +150,17 @@ export default function PostCard({ post, onDeleted }) {
               className="w-11 h-11 rounded-full object-cover"
             />
           ) : (
-            <div className="w-11 h-11 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-medium">
+            <div className="w-11 h-11 rounded-full text-white flex items-center justify-center text-sm font-semibold" style={getAvatarStyle(post.author.username)}>
               {initials}
             </div>
           )}
           <div>
-            <span className="text-sm font-medium text-gray-900">
+            <Link
+              to={`/user/${post.author.id}`}
+              className="text-sm font-medium text-gray-900 hover:underline"
+            >
               {post.author.username}
-            </span>
+            </Link>
             <span className="text-xs text-gray-400 ml-2">
               {timeAgo(post.created_at)}
             </span>
@@ -194,6 +203,17 @@ export default function PostCard({ post, onDeleted }) {
                 ) : (
                   <>
                     <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        followMutation.mutate(post.author.id);
+                      }}
+                      disabled={followMutation.isPending}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer flex items-center gap-2 disabled:opacity-50"
+                    >
+                      {isFollowing ? <UserMinus size={14} /> : <UserPlus size={14} />}
+                      {followMutation.isPending ? "…" : isFollowing ? "Unfollow" : "Follow"}
+                    </button>
+                    <button
                       onClick={() => { setMenuOpen(false); setShowReport(true); }}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer flex items-center gap-2"
                     >
@@ -222,7 +242,7 @@ export default function PostCard({ post, onDeleted }) {
       </div>
 
       {/* Content */}
-      <PostContent content={post.content} />
+      <PostContent content={post.content} mentions={post.mentions} />
 
       {/* Link preview */}
       {post.link_preview && (

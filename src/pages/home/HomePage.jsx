@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
+import { getAvatarStyle } from "../../utils/avatarColor";
 
 const features = [
   {
@@ -110,7 +111,7 @@ export default function HomePage() {
           {posts.map((post, i) => (
             <div key={i} className="border border-gray-200 rounded-xl p-5">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs font-medium select-none">
+                <div className="w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-semibold select-none" style={getAvatarStyle(post.name)}>
                   {post.avatar}
                 </div>
                 <div>

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useSearchPosts } from "../../hooks/usePosts";
 import { postsAPI } from "../../api/posts";
 import { useQuery } from "@tanstack/react-query";
+import { getAvatarStyle } from "../../utils/avatarColor";
 import PostCard from "../../components/posts/PostCard";
 
 const TABS = ["Posts", "Users", "Hashtags"];
@@ -112,7 +113,7 @@ export default function SearchPage() {
               key={user.id}
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50"
             >
-              <div className="w-9 h-9 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs font-medium">
+              <div className="w-9 h-9 rounded-full text-white flex items-center justify-center text-xs font-semibold" style={getAvatarStyle(user.username)}>
                 {user.username.slice(0, 2).toUpperCase()}
               </div>
               <div>

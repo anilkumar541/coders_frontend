@@ -26,14 +26,14 @@ export function useMyPosts() {
   });
 }
 
-export function useUserPosts(username) {
+export function useUserPosts(userId) {
   return useInfiniteQuery({
-    queryKey: ["userPosts", username],
-    queryFn: ({ pageParam }) => postsAPI.getUserPosts(username, pageParam),
+    queryKey: ["userPosts", userId],
+    queryFn: ({ pageParam }) => postsAPI.getUserPosts(userId, pageParam),
     getNextPageParam: (lastPage) =>
       lastPage.data.has_more ? lastPage.data.next_cursor : undefined,
     initialPageParam: undefined,
-    enabled: !!username,
+    enabled: !!userId,
   });
 }
 
@@ -340,3 +340,41 @@ export function useEditHistory(postId, enabled = false) {
     enabled,
   });
 }
+
+export function useFollowUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId) => postsAPI.toggleFollow(userId),
+    onSuccess: (_data, userId) => {
+      _invalidateAllFeeds(queryClient);
+      queryClient.invalidateQueries({ queryKey: ["publicProfile"] });
+      queryClient.invalidateQueries({ queryKey: ["followers", userId] });
+      queryClient.invalidateQueries({ queryKey: ["following", userId] });
+    },
+  });
+}
+
+export function useFollowers(userId) {
+  return useQuery({
+    queryKey: ["followers", userId],
+    queryFn: () => postsAPI.getFollowers(userId),
+    enabled: !!userId,
+  });
+}
+
+export function useFollowing(userId) {
+  return useQuery({
+    queryKey: ["following", userId],
+    queryFn: () => postsAPI.getFollowing(userId),
+    enabled: !!userId,
+  });
+}
+
+export function usePublicProfile(userId) {
+  return useQuery({
+    queryKey: ["publicProfile", userId],
+    queryFn: () => postsAPI.getPublicProfile(userId),
+    enabled: !!userId,
+  });
+}
+

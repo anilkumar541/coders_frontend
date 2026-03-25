@@ -37,29 +37,29 @@ describe("Navbar", () => {
     expect(screen.getByLabelText("Open user menu")).toBeInTheDocument();
   });
 
-  it("shows dropdown with Profile, Change Password, Notification Preferences, Logout on avatar click", async () => {
+  it("shows dropdown with Profile, Notification Preferences, Logout on avatar click (no Change Password or Privacy Settings)", async () => {
     setAuthState("test-token", { username: "testuser", email: "test@example.com" });
     renderWithProviders(<Navbar />);
     await userEvent.click(screen.getByLabelText("Open user menu"));
     expect(screen.getByText("Profile")).toBeInTheDocument();
-    expect(screen.getByText("Change Password")).toBeInTheDocument();
+    expect(screen.queryByText("Change Password")).not.toBeInTheDocument();
+    expect(screen.queryByText("Privacy Settings")).not.toBeInTheDocument();
     expect(screen.getByText("Notification Preferences")).toBeInTheDocument();
     expect(screen.getByText("Logout")).toBeInTheDocument();
   });
 
-  it("shows nav links (Home, Create, Search) when authenticated", () => {
+  it("shows nav links (Home, Create) when authenticated — no Search", () => {
     setAuthState("test-token", { username: "testuser" });
     renderWithProviders(<Navbar />);
     expect(screen.getByRole("link", { name: /home/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /create/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /search/i })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /search/i })).not.toBeInTheDocument();
   });
 
   it("does not show nav links when not authenticated", () => {
     renderWithProviders(<Navbar />);
     expect(screen.queryByRole("link", { name: /home/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /create/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /search/i })).not.toBeInTheDocument();
   });
 
   it("shows brand link", () => {

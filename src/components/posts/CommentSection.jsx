@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuthStore } from "../../store/authStore";
+import { getAvatarStyle } from "../../utils/avatarColor";
 import {
   useComments,
   useCreateComment,
@@ -60,7 +61,8 @@ function Avatar({ author, size = "md" }) {
   }
   return (
     <div
-      className={`${cls} rounded-full bg-gray-900 text-white flex items-center justify-center font-semibold shrink-0`}
+      className={`${cls} rounded-full text-white flex items-center justify-center font-semibold shrink-0`}
+      style={getAvatarStyle(author?.username)}
     >
       {initials}
     </div>

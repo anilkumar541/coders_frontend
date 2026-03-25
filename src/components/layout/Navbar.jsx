@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { useLogout } from "../../hooks/useAuth";
 import NotificationBell from "../notifications/NotificationBell";
+import { getAvatarStyle } from "../../utils/avatarColor";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -26,7 +27,10 @@ function Avatar({ user, size = "md" }) {
   }
 
   return (
-    <div className={`${sizeClass} rounded-full bg-gray-900 text-white flex items-center justify-center font-medium cursor-pointer select-none`}>
+    <div
+      className={`${sizeClass} rounded-full text-white flex items-center justify-center font-semibold cursor-pointer select-none`}
+      style={getAvatarStyle(user?.username)}
+    >
       {initials}
     </div>
   );
@@ -89,12 +93,6 @@ export default function Navbar() {
                 >
                   Create
                 </Link>
-                <Link
-                  to="/search"
-                  className={`text-sm ${pathname === "/search" ? "text-gray-900 font-medium" : "text-gray-500 hover:text-gray-900"}`}
-                >
-                  Search
-                </Link>
               </div>
             )}
             {accessToken && <NotificationBell />}
@@ -118,22 +116,10 @@ export default function Navbar() {
                         Profile
                       </button>
                       <button
-                        onClick={() => { setOpen(false); navigate("/change-password"); }}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
-                      >
-                        Change Password
-                      </button>
-                      <button
                         onClick={() => { setOpen(false); navigate("/notification-preferences"); }}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
                       >
                         Notification Preferences
-                      </button>
-                      <button
-                        onClick={() => { setOpen(false); navigate("/settings/privacy"); }}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
-                      >
-                        Privacy Settings
                       </button>
                       <div className="border-t border-gray-100 mt-1 pt-1">
                         <button

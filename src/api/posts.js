@@ -6,8 +6,8 @@ export const postsAPI = {
     api.get("/posts/feed/", { params: cursor ? { cursor } : {} }),
   getMyPosts: (cursor) =>
     api.get("/posts/me/", { params: cursor ? { cursor } : {} }),
-  getUserPosts: (username, cursor) =>
-    api.get(`/posts/user/${username}/`, { params: cursor ? { cursor } : {} }),
+  getUserPosts: (userId, cursor) =>
+    api.get(`/posts/user/${userId}/`, { params: cursor ? { cursor } : {} }),
 
   // CRUD
   createPost: (data) => api.post("/posts/create/", data),
@@ -32,7 +32,7 @@ export const postsAPI = {
     const formData = new FormData();
     formData.append("file", file);
     return api.post("/posts/media/upload/", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { "Content-Type": undefined },
       onUploadProgress: onProgress,
     });
   },
@@ -72,6 +72,12 @@ export const postsAPI = {
   muteUser: (userId) => api.post(`/posts/mute/${userId}/`),
   getBlockedUsers: () => api.get("/posts/blocked/"),
   getMutedUsers: () => api.get("/posts/muted/"),
+
+  // Follow
+  toggleFollow: (userId) => api.post(`/posts/follow/${userId}/`),
+  getFollowers: (userId) => api.get(`/posts/users/${userId}/followers/`),
+  getFollowing: (userId) => api.get(`/posts/users/${userId}/following/`),
+  getPublicProfile: (userId) => api.get(`/posts/users/${userId}/profile/`),
 
   // Drafts
   getDrafts: () => api.get("/posts/drafts/"),

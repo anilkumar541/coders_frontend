@@ -142,9 +142,9 @@ export default function PostFeed({ query }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div>
       <PullToRefresh onRefresh={handleRefresh} isRefreshing={isRefreshing} />
-
+      <div className="space-y-4">
       {posts.map((post) => (
         <PostCard key={post.id} post={post} onDeleted={() => query.refetch()} />
       ))}
@@ -153,11 +153,12 @@ export default function PostFeed({ query }) {
       <div ref={sentinelRef} className="h-4" />
 
       {query.isFetchingNextPage && (
-        <div className="space-y-4">
+        <>
           <PostSkeleton />
           <PostSkeleton />
-        </div>
+        </>
       )}
+      </div>
     </div>
   );
 }

@@ -21,7 +21,7 @@ describe("PostContent", () => {
     expect(link.className).toContain("text-indigo-600");
   });
 
-  it("renders mentions as clickable links", () => {
+  it("renders mentions as clickable links (falls back to username when no mentions prop)", () => {
     renderWithRouter(<PostContent content="Hello @alice" />);
     const link = screen.getByText("@alice");
     expect(link.tagName).toBe("A");
@@ -29,12 +29,22 @@ describe("PostContent", () => {
     expect(link.className).toContain("text-indigo-600");
   });
 
+  it("renders mentions with ID-based link when mentions prop provided", () => {
+    renderWithRouter(
+      <PostContent content="Hello @alice" mentions={[{ id: 42, username: "alice" }]} />
+    );
+    expect(screen.getByText("@alice")).toHaveAttribute("href", "/user/42");
+  });
+
   it("renders mixed content with hashtags and mentions", () => {
     renderWithRouter(
-      <PostContent content="Check #python by @alice today" />
+      <PostContent
+        content="Check #python by @alice today"
+        mentions={[{ id: 42, username: "alice" }]}
+      />
     );
     expect(screen.getByText("#python")).toHaveAttribute("href", "/hashtag/python");
-    expect(screen.getByText("@alice")).toHaveAttribute("href", "/user/alice");
+    expect(screen.getByText("@alice")).toHaveAttribute("href", "/user/42");
   });
 
   it("normalizes hashtag links to lowercase", () => {

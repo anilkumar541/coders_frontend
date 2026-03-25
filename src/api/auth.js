@@ -13,7 +13,7 @@ export const authAPI = {
   updateProfile: (data) => api.patch("/auth/me/update/", data),
   uploadProfilePicture: (formData) =>
     api.patch("/auth/me/profile-picture/", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { "Content-Type": undefined },
     }),
   deleteProfilePicture: () => api.delete("/auth/me/profile-picture/"),
 };

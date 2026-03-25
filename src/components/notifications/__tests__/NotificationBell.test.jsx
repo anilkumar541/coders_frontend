@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import NotificationBell from "../NotificationBell";
 
@@ -36,7 +37,9 @@ function renderWithProviders(ui) {
     },
   });
   return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    </BrowserRouter>
   );
 }
 
@@ -149,6 +152,15 @@ describe("NotificationBell", () => {
     renderWithProviders(<NotificationBell />);
     await waitFor(() => {
       expect(screen.getByText("99+")).toBeInTheDocument();
+    });
+  });
+
+  it("actor username in panel links to public profile", async () => {
+    renderWithProviders(<NotificationBell />);
+    await userEvent.click(screen.getByLabelText("Notifications"));
+    await waitFor(() => {
+      const aliceLink = screen.getByRole("link", { name: "alice" });
+      expect(aliceLink).toHaveAttribute("href", "/user/2");
     });
   });
 });

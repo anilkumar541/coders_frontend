@@ -42,6 +42,7 @@ export default function App() {
             {/* Public routes */}
             <Route path="/" element={<HomePage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/user/:userId" element={<ProfilePage />} />
 
             {/* Guest only routes */}
             <Route element={<GuestRoute />}>

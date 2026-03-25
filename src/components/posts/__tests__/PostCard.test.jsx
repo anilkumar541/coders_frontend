@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import PostCard from "../PostCard";
 
@@ -29,6 +30,7 @@ vi.mock("../../../api/posts", () => ({
     muteUser: vi.fn().mockResolvedValue({ data: { muted: true } }),
     getBlockedUsers: vi.fn().mockResolvedValue({ data: [] }),
     getMutedUsers: vi.fn().mockResolvedValue({ data: [] }),
+    toggleFollow: vi.fn().mockResolvedValue({ data: { following: true } }),
   },
 }));
 
@@ -58,6 +60,7 @@ const mockPost = {
   mentions: [],
   user_reaction: null,
   user_saved: false,
+  is_following_author: false,
 };
 
 const otherUserPost = {
@@ -71,7 +74,9 @@ function renderWithProviders(ui) {
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    </BrowserRouter>
   );
 }
 
@@ -226,5 +231,31 @@ describe("PostCard", () => {
     await user.click(commentBtn);
     // CommentModal renders with a close button
     expect(await screen.findByLabelText("Close comments")).toBeInTheDocument();
+  });
+
+  it("shows Follow option in non-owner menu", async () => {
+    renderWithProviders(<PostCard post={otherUserPost} />);
+    await userEvent.click(screen.getByLabelText("Post options"));
+    expect(screen.getByText("Follow")).toBeInTheDocument();
+  });
+
+  it("shows Unfollow when is_following_author is true", async () => {
+    const followedPost = { ...otherUserPost, is_following_author: true };
+    renderWithProviders(<PostCard post={followedPost} />);
+    await userEvent.click(screen.getByLabelText("Post options"));
+    expect(screen.getByText("Unfollow")).toBeInTheDocument();
+  });
+
+  it("does not show Follow in owner menu", async () => {
+    renderWithProviders(<PostCard post={mockPost} />);
+    await userEvent.click(screen.getByLabelText("Post options"));
+    expect(screen.queryByText("Follow")).not.toBeInTheDocument();
+    expect(screen.queryByText("Unfollow")).not.toBeInTheDocument();
+  });
+
+  it("username is a link to public profile", () => {
+    renderWithProviders(<PostCard post={mockPost} />);
+    const link = screen.getByRole("link", { name: "testuser" });
+    expect(link).toHaveAttribute("href", "/user/1");
   });
 });
