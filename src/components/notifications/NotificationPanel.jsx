@@ -4,34 +4,11 @@ import {
   useMarkAllRead,
 } from "../../hooks/useNotifications";
 import { NotificationSkeleton } from "../common/Skeletons";
-import { getAvatarStyle } from "../../utils/avatarColor";
+import Avatar from "../common/Avatar";
+import { timeAgo } from "../../utils/timeAgo";
 import { Link } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-function timeAgo(dateStr) {
-  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
-  if (diff < 60) return "just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  if (diff < 2592000) return `${Math.floor(diff / 86400)}d ago`;
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
 function NotificationItem({ notification, onMarkRead }) {
-  const profilePicture = notification.actor.profile_picture
-    ? notification.actor.profile_picture.startsWith("http")
-      ? notification.actor.profile_picture
-      : `${API_URL}${notification.actor.profile_picture}`
-    : null;
-
-  const initials = notification.actor.username
-    ? notification.actor.username.slice(0, 2).toUpperCase()
-    : "?";
-
   return (
     <button
       onClick={() => !notification.is_read && onMarkRead(notification.id)}
@@ -40,24 +17,14 @@ function NotificationItem({ notification, onMarkRead }) {
       }`}
     >
       {/* Unread dot */}
-      <div className="flex-shrink-0 mt-2 w-2">
+      <div className="shrink-0 mt-2 w-2">
         {!notification.is_read && (
           <div className="w-2 h-2 rounded-full bg-indigo-500" />
         )}
       </div>
 
       {/* Avatar */}
-      {profilePicture ? (
-        <img
-          src={profilePicture}
-          alt={notification.actor.username}
-          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-        />
-      ) : (
-        <div className="w-8 h-8 rounded-full text-white flex items-center justify-center text-[10px] font-semibold shrink-0" style={getAvatarStyle(notification.actor.username)}>
-          {initials}
-        </div>
-      )}
+      <Avatar user={notification.actor} size="sm" className="shrink-0" />
 
       {/* Content */}
       <div className="flex-1 min-w-0">

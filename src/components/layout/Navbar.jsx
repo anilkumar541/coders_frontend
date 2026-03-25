@@ -3,38 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { useLogout } from "../../hooks/useAuth";
 import NotificationBell from "../notifications/NotificationBell";
-import { getAvatarStyle } from "../../utils/avatarColor";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-function Avatar({ user, size = "md" }) {
-  const sizeClass = size === "xl" ? "w-24 h-24 text-2xl" : size === "lg" ? "w-16 h-16 text-xl" : "w-12 h-12 text-sm";
-  const initials = user?.username ? user.username.slice(0, 2).toUpperCase() : "?";
-  const pictureUrl = user?.profile_picture
-    ? user.profile_picture.startsWith("http")
-      ? user.profile_picture
-      : `${API_URL}${user.profile_picture}`
-    : null;
-
-  if (pictureUrl) {
-    return (
-      <img
-        src={pictureUrl}
-        alt={user.username}
-        className={`${sizeClass} rounded-full object-cover cursor-pointer select-none block`}
-      />
-    );
-  }
-
-  return (
-    <div
-      className={`${sizeClass} rounded-full text-white flex items-center justify-center font-semibold cursor-pointer select-none`}
-      style={getAvatarStyle(user?.username)}
-    >
-      {initials}
-    </div>
-  );
-}
+import Avatar from "../common/Avatar";
 
 export { Avatar };
 

@@ -83,6 +83,9 @@ vi.mock("../../../api/posts", () => ({
     getUserPosts: vi.fn().mockResolvedValue({
       data: { results: [], has_more: false, next_cursor: null },
     }),
+    getSavedPosts: vi.fn().mockResolvedValue({
+      data: { results: [], has_more: false, next_cursor: null },
+    }),
   },
 }));
 
@@ -129,12 +132,13 @@ describe("ProfilePage — own profile (/profile)", () => {
     vi.clearAllMocks();
   });
 
-  it("renders all four own-profile tabs", async () => {
+  it("renders all own-profile tabs including Saved", async () => {
     renderOwnProfile();
     await waitFor(() => {
       // Use exact match to avoid matching "Edit Profile"
       expect(screen.getByRole("button", { name: /^Profile$/ })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /^My Posts$/ })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /^Saved$/ })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /^Privacy$/ })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /^Security$/ })).toBeInTheDocument();
     });
@@ -337,6 +341,7 @@ describe("ProfilePage — other user (/user/:userId)", () => {
     expect(screen.queryByRole("button", { name: /Privacy/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Security/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /My Posts/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Saved$/i })).not.toBeInTheDocument();
   });
 
   it("does not show Edit Profile button for other user", async () => {

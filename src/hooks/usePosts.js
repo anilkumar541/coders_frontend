@@ -6,6 +6,9 @@ import {
 } from "@tanstack/react-query";
 import { postsAPI } from "../api/posts";
 
+// Cap infinite scroll at 20 pages (~400 posts) to prevent unbounded memory growth
+const MAX_FEED_PAGES = 20;
+
 export function useFeed() {
   return useInfiniteQuery({
     queryKey: ["feed"],
@@ -13,6 +16,7 @@ export function useFeed() {
     getNextPageParam: (lastPage) =>
       lastPage.data.has_more ? lastPage.data.next_cursor : undefined,
     initialPageParam: undefined,
+    maxPages: MAX_FEED_PAGES,
   });
 }
 
@@ -23,6 +27,7 @@ export function useMyPosts() {
     getNextPageParam: (lastPage) =>
       lastPage.data.has_more ? lastPage.data.next_cursor : undefined,
     initialPageParam: undefined,
+    maxPages: MAX_FEED_PAGES,
   });
 }
 
@@ -34,6 +39,7 @@ export function useUserPosts(userId) {
       lastPage.data.has_more ? lastPage.data.next_cursor : undefined,
     initialPageParam: undefined,
     enabled: !!userId,
+    maxPages: MAX_FEED_PAGES,
   });
 }
 
@@ -42,9 +48,10 @@ export function useReactToPost() {
   return useMutation({
     mutationFn: ({ id, reaction_type }) =>
       postsAPI.reactToPost(id, reaction_type),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
-      queryClient.invalidateQueries({ queryKey: ["myPosts"] });
+    // Patch only the affected post in-place — no full feed refetch needed
+    onSuccess: (data, { id }) => {
+      const updatedPost = data.data;
+      _patchPostInAllFeeds(queryClient, id, () => updatedPost);
     },
   });
 }
@@ -53,9 +60,11 @@ export function useSavePost() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id) => postsAPI.savePost(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
-      queryClient.invalidateQueries({ queryKey: ["myPosts"] });
+    onSuccess: (data, id) => {
+      const updatedPost = data.data;
+      // Patch the post's save state across all feeds instantly
+      _patchPostInAllFeeds(queryClient, id, () => updatedPost);
+      // Invalidate savedPosts collection since an item was added/removed
       queryClient.invalidateQueries({ queryKey: ["savedPosts"] });
     },
   });
@@ -68,6 +77,7 @@ export function useSavedPosts() {
     getNextPageParam: (lastPage) =>
       lastPage.data.has_more ? lastPage.data.next_cursor : undefined,
     initialPageParam: undefined,
+    maxPages: MAX_FEED_PAGES,
   });
 }
 
@@ -79,6 +89,7 @@ export function useHashtagFeed(name) {
       lastPage.data.has_more ? lastPage.data.next_cursor : undefined,
     initialPageParam: undefined,
     enabled: !!name,
+    maxPages: MAX_FEED_PAGES,
   });
 }
 
@@ -107,6 +118,7 @@ export function useEditPost() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       queryClient.invalidateQueries({ queryKey: ["myPosts"] });
+      queryClient.invalidateQueries({ queryKey: ["publicProfile"] });
     },
   });
 }
@@ -118,6 +130,7 @@ export function useDeletePost() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       queryClient.invalidateQueries({ queryKey: ["myPosts"] });
+      queryClient.invalidateQueries({ queryKey: ["publicProfile"] });
     },
   });
 }
@@ -247,6 +260,7 @@ export function useRankedFeed() {
     getNextPageParam: (lastPage) =>
       lastPage.data.has_more ? lastPage.data.page + 1 : undefined,
     initialPageParam: 1,
+    maxPages: MAX_FEED_PAGES,
   });
 }
 
@@ -266,6 +280,7 @@ export function useSearchPosts(q) {
       lastPage.data.has_more ? lastPage.data.page + 1 : undefined,
     initialPageParam: 1,
     enabled: !!q && q.length >= 2,
+    maxPages: MAX_FEED_PAGES,
   });
 }
 
@@ -277,13 +292,37 @@ export function useReport() {
   });
 }
 
+const ALL_FEED_KEYS = ["feed", "rankedFeed", "savedPosts", "userPosts", "hashtagFeed", "searchPosts", "myPosts"];
+
 function _invalidateAllFeeds(queryClient) {
-  queryClient.invalidateQueries({ queryKey: ["feed"] });
-  queryClient.invalidateQueries({ queryKey: ["rankedFeed"] });
-  queryClient.invalidateQueries({ queryKey: ["savedPosts"] });
-  queryClient.invalidateQueries({ queryKey: ["userPosts"] });
-  queryClient.invalidateQueries({ queryKey: ["hashtagFeed"] });
-  queryClient.invalidateQueries({ queryKey: ["searchPosts"] });
+  for (const key of ALL_FEED_KEYS) {
+    queryClient.invalidateQueries({ queryKey: [key] });
+  }
+}
+
+/**
+ * Patch a single post (by id) across all cached feed pages using an updater fn.
+ * Works for both cursor-paginated and page-number-paginated feeds since both
+ * use `page.data.results` as the results array.
+ */
+function _patchPostInAllFeeds(queryClient, postId, updater) {
+  for (const key of ALL_FEED_KEYS) {
+    queryClient.setQueriesData({ queryKey: [key] }, (old) => {
+      if (!old?.pages) return old;
+      return {
+        ...old,
+        pages: old.pages.map((page) => ({
+          ...page,
+          data: {
+            ...page.data,
+            results: page.data.results.map((post) =>
+              String(post.id) === String(postId) ? updater(post) : post
+            ),
+          },
+        })),
+      };
+    });
+  }
 }
 
 export function useBlockUser() {
@@ -345,8 +384,29 @@ export function useFollowUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId) => postsAPI.toggleFollow(userId),
-    onSuccess: (_data, userId) => {
-      _invalidateAllFeeds(queryClient);
+    onSuccess: (data, userId) => {
+      const isFollowing = data.data.following;
+      // Immediately patch every cached post by this author so all cards update
+      // in sync — no full feed refetch required
+      for (const key of ALL_FEED_KEYS) {
+        queryClient.setQueriesData({ queryKey: [key] }, (old) => {
+          if (!old?.pages) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              data: {
+                ...page.data,
+                results: page.data.results.map((post) =>
+                  String(post.author?.id) === String(userId)
+                    ? { ...post, is_following_author: isFollowing }
+                    : post
+                ),
+              },
+            })),
+          };
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["publicProfile"] });
       queryClient.invalidateQueries({ queryKey: ["followers", userId] });
       queryClient.invalidateQueries({ queryKey: ["following", userId] });

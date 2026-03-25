@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import PostCard from "./PostCard";
 import { PostSkeleton } from "../common/Skeletons";
+import ErrorBoundary from "../common/ErrorBoundary";
 
 function PullToRefresh({ onRefresh, isRefreshing }) {
   const [pulling, setPulling] = useState(false);
@@ -146,7 +147,16 @@ export default function PostFeed({ query }) {
       <PullToRefresh onRefresh={handleRefresh} isRefreshing={isRefreshing} />
       <div className="space-y-4">
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} onDeleted={() => query.refetch()} />
+        <ErrorBoundary
+          key={post.id}
+          fallback={
+            <div className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400">
+              This post could not be displayed.
+            </div>
+          }
+        >
+          <PostCard post={post} onDeleted={() => query.refetch()} />
+        </ErrorBoundary>
       ))}
 
       {/* Sentinel for infinite scroll */}

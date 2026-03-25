@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useViewTracker } from "../../hooks/useViewTracker";
 import { formatCount } from "../../utils/formatCount";
-import { getAvatarStyle } from "../../utils/avatarColor";
+import { timeAgo } from "../../utils/timeAgo";
+import Avatar from "../common/Avatar";
 import { useDeletePost, useUndoDeletePost, useReactToPost, useSavePost, useBlockUser, useMuteUser, useBlockedUsers, useMutedUsers, useFollowUser } from "../../hooks/usePosts";
 import { useAuthStore } from "../../store/authStore";
 import MediaGallery from "./MediaGallery";
@@ -27,20 +28,6 @@ import {
   UserMinus,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-function timeAgo(dateStr) {
-  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
-  if (diff < 60) return "just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  if (diff < 2592000) return `${Math.floor(diff / 86400)}d ago`;
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
 
 export default function PostCard({ post, onDeleted }) {
   const user = useAuthStore((s) => s.user);
@@ -70,6 +57,7 @@ export default function PostCard({ post, onDeleted }) {
   const isBlocked = blockedUsersData?.data?.some((u) => u.id === post.author.id) ?? false;
   const isMuted = mutedUsersData?.data?.some((u) => u.id === post.author.id) ?? false;
   const isFollowing = post.is_following_author ?? false;
+
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -128,32 +116,12 @@ export default function PostCard({ post, onDeleted }) {
     );
   }
 
-  const profilePicture = post.author.profile_picture
-    ? post.author.profile_picture.startsWith("http")
-      ? post.author.profile_picture
-      : `${API_URL}${post.author.profile_picture}`
-    : null;
-
-  const initials = post.author.username
-    ? post.author.username.slice(0, 2).toUpperCase()
-    : "?";
-
   return (
     <div ref={cardRef} className="border border-gray-200 rounded-xl px-4 pt-2 pb-3">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          {profilePicture ? (
-            <img
-              src={profilePicture}
-              alt={post.author.username}
-              className="w-11 h-11 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-11 h-11 rounded-full text-white flex items-center justify-center text-sm font-semibold" style={getAvatarStyle(post.author.username)}>
-              {initials}
-            </div>
-          )}
+          <Avatar user={post.author} size="md" className="shrink-0" />
           <div>
             <Link
               to={`/user/${post.author.id}`}

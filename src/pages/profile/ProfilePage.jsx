@@ -12,6 +12,7 @@ import {
 } from "../../hooks/useAuth";
 import {
   useMyPosts,
+  useSavedPosts,
   useBlockedUsers,
   useMutedUsers,
   useBlockUser,
@@ -59,6 +60,15 @@ const OWN_TABS = [
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+      </svg>
+    ),
+  },
+  {
+    id: "Saved",
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
       </svg>
     ),
   },
@@ -132,6 +142,7 @@ export default function ProfilePage() {
   const followMutation = useFollowUser();
 
   const myPostsQuery = useMyPosts();
+  const savedPostsQuery = useSavedPosts();
   const otherPostsQuery = useUserPosts(activeTab === "Posts" ? userId : null);
 
   const profileId = userId ? publicProfileData?.data?.id : authUser?.id;
@@ -268,6 +279,11 @@ export default function ProfilePage() {
         {isOwnProfile && activeTab === "My Posts" && (
           <div className="pt-2 max-w-[712px] mx-auto w-full">
             <PostFeed query={myPostsQuery} />
+          </div>
+        )}
+        {isOwnProfile && activeTab === "Saved" && (
+          <div className="pt-2 max-w-[712px] mx-auto w-full">
+            <PostFeed query={savedPostsQuery} />
           </div>
         )}
         {isOwnProfile && activeTab === "Followers" && (
@@ -492,9 +508,14 @@ function ProfileTab({
           </p>
         )}
 
-        {/* Own profile: member since + verified */}
+        {/* Own profile: stats + member since + verified */}
         {isOwnProfile && (
-          <div className="w-full border-t border-gray-100 mt-4 pt-4 flex flex-col items-center gap-2">
+          <div className="w-full border-t border-gray-100 mt-4 pt-4 flex flex-col items-center gap-3">
+            <div className="flex gap-4 text-sm text-gray-500">
+              <span><span className="font-semibold text-gray-900">{user?.post_count ?? 0}</span> posts</span>
+              <span><span className="font-semibold text-gray-900">{user?.follower_count ?? 0}</span> followers</span>
+              <span><span className="font-semibold text-gray-900">{user?.following_count ?? 0}</span> following</span>
+            </div>
             {joinedDate && (
               <p className="text-xs text-gray-400">Member since {joinedDate}</p>
             )}
