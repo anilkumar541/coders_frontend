@@ -64,19 +64,19 @@ describe("Navbar", () => {
 
   it("shows brand link", () => {
     renderWithProviders(<Navbar />);
-    expect(screen.getByText("Coders")).toBeInTheDocument();
+    expect(screen.getByText("Coduex")).toBeInTheDocument();
   });
 
   it("brand links to home when not authenticated", () => {
     renderWithProviders(<Navbar />);
-    const brand = screen.getByText("Coders");
+    const brand = screen.getByText("Coduex");
     expect(brand.closest("a")).toHaveAttribute("href", "/");
   });
 
   it("brand links to dashboard when authenticated", () => {
     setAuthState("test-token", { username: "testuser" });
     renderWithProviders(<Navbar />);
-    const brand = screen.getByText("Coders");
+    const brand = screen.getByText("Coduex");
     expect(brand.closest("a")).toHaveAttribute("href", "/dashboard");
   });
 

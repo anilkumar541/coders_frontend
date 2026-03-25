@@ -85,7 +85,7 @@ export default function HomePage() {
           <span className="border-b-2 border-gray-900">speaks code</span>
         </h1>
         <p className="text-gray-500 text-lg max-w-xl mx-auto mb-10 leading-relaxed">
-          Coders is where developers post, rant, share, and learn — without the lifestyle noise.
+          Coduex is where developers post, rant, share, and learn — without the lifestyle noise.
           Every post is relevant because every person here writes code.
         </p>
         <div className="flex items-center justify-center gap-4 flex-wrap">
@@ -164,7 +164,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-gray-100 px-6 py-8 text-center">
-        <span className="text-xs text-gray-400">© {new Date().getFullYear()} Coders. Built for developers, by developers.</span>
+        <span className="text-xs text-gray-400">© {new Date().getFullYear()} Coduex. Built for developers, by developers.</span>
       </footer>
     </div>
   );

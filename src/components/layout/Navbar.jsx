@@ -75,7 +75,7 @@ export default function Navbar() {
             to={accessToken ? "/dashboard" : "/"}
             className="text-xl font-semibold text-gray-900"
           >
-            Coders
+            Coduex
           </Link>
 
           <div className="flex items-center gap-6">
