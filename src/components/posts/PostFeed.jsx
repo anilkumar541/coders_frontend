@@ -77,7 +77,7 @@ function PullToRefresh({ onRefresh, isRefreshing }) {
   );
 }
 
-export default function PostFeed({ query }) {
+export default function PostFeed({ query, emptyMessage }) {
   const sentinelRef = useRef(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -137,7 +137,7 @@ export default function PostFeed({ query }) {
   if (posts.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-sm text-gray-500">No posts yet. Be the first to share something.</p>
+        <p className="text-sm text-gray-500">{emptyMessage || "No posts yet. Be the first to share something."}</p>
       </div>
     );
   }

@@ -41,7 +41,7 @@ export default function BlockedMutedPage() {
   const mutedUsers = mutedData?.data ?? [];
 
   return (
-    <div className="max-w-2xl mx-auto mt-8 px-4 pb-16">
+    <div className="max-w-2xl mx-auto mt-8 px-2 sm:px-4 pb-16">
       <h1 className="text-xl font-semibold text-gray-900 mb-6">Privacy Settings</h1>
 
       <Section

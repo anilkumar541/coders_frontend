@@ -16,4 +16,5 @@ export const authAPI = {
       headers: { "Content-Type": undefined },
     }),
   deleteProfilePicture: () => api.delete("/auth/me/profile-picture/"),
+  completeOnboarding: (data) => api.patch("/auth/onboarding/", data),
 };

@@ -277,17 +277,17 @@ export default function ProfilePage() {
 
         {/* Own-profile tabs */}
         {isOwnProfile && activeTab === "My Posts" && (
-          <div className="pt-2 max-w-[712px] mx-auto w-full">
+          <div className="pt-2 max-w-[808px] mx-auto w-full">
             <PostFeed query={myPostsQuery} />
           </div>
         )}
         {isOwnProfile && activeTab === "Saved" && (
-          <div className="pt-2 max-w-[712px] mx-auto w-full">
+          <div className="pt-2 max-w-[808px] mx-auto w-full">
             <PostFeed query={savedPostsQuery} />
           </div>
         )}
         {isOwnProfile && activeTab === "Followers" && (
-          <div className="pt-4 max-w-[712px] mx-auto w-full">
+          <div className="pt-4 max-w-[808px] mx-auto w-full">
             {followersLoading ? (
               <Spinner />
             ) : (followersData?.data || []).length === 0 ? (
@@ -302,7 +302,7 @@ export default function ProfilePage() {
           </div>
         )}
         {isOwnProfile && activeTab === "Following" && (
-          <div className="pt-4 max-w-[712px] mx-auto w-full">
+          <div className="pt-4 max-w-[808px] mx-auto w-full">
             {followingLoading ? (
               <Spinner />
             ) : (followingData?.data || []).length === 0 ? (
@@ -329,12 +329,12 @@ export default function ProfilePage() {
 
         {/* Other-profile tabs */}
         {!isOwnProfile && activeTab === "Posts" && (
-          <div className="pt-2 max-w-[712px] mx-auto w-full">
+          <div className="pt-2 max-w-[808px] mx-auto w-full">
             <PostFeed query={otherPostsQuery} />
           </div>
         )}
         {!isOwnProfile && activeTab === "Followers" && (
-          <div className="pt-4 max-w-[712px] mx-auto w-full">
+          <div className="pt-4 max-w-[808px] mx-auto w-full">
             {followersLoading ? (
               <Spinner />
             ) : (followersData?.data || []).length === 0 ? (
@@ -349,7 +349,7 @@ export default function ProfilePage() {
           </div>
         )}
         {!isOwnProfile && activeTab === "Following" && (
-          <div className="pt-4 max-w-[712px] mx-auto w-full">
+          <div className="pt-4 max-w-[808px] mx-auto w-full">
             {followingLoading ? (
               <Spinner />
             ) : (followingData?.data || []).length === 0 ? (

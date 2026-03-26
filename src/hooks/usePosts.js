@@ -81,6 +81,17 @@ export function useSavedPosts() {
   });
 }
 
+export function useAIFeed() {
+  return useInfiniteQuery({
+    queryKey: ["aiFeed"],
+    queryFn: ({ pageParam }) => postsAPI.getAIFeed(pageParam),
+    getNextPageParam: (lastPage) =>
+      lastPage.data.has_more ? lastPage.data.next_cursor : undefined,
+    initialPageParam: undefined,
+    maxPages: MAX_FEED_PAGES,
+  });
+}
+
 export function useHashtagFeed(name) {
   return useInfiniteQuery({
     queryKey: ["hashtagFeed", name],
@@ -292,7 +303,7 @@ export function useReport() {
   });
 }
 
-const ALL_FEED_KEYS = ["feed", "rankedFeed", "savedPosts", "userPosts", "hashtagFeed", "searchPosts", "myPosts"];
+const ALL_FEED_KEYS = ["feed", "aiFeed", "rankedFeed", "savedPosts", "userPosts", "hashtagFeed", "searchPosts", "myPosts"];
 
 function _invalidateAllFeeds(queryClient) {
   for (const key of ALL_FEED_KEYS) {

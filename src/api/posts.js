@@ -57,6 +57,10 @@ export const postsAPI = {
   reactToComment: (postId, commentId, reaction_type) =>
     api.post(`/posts/${postId}/comments/${commentId}/react/`, { reaction_type }),
 
+  // AI Feed
+  getAIFeed: (cursor) =>
+    api.get("/posts/feed/ai/", { params: cursor ? { cursor } : {} }),
+
   // Ranked Feed & Search
   getRankedFeed: (page) =>
     api.get("/posts/feed/ranked/", { params: page ? { page } : {} }),

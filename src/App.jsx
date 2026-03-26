@@ -14,11 +14,14 @@ import ChangePasswordPage from "./pages/auth/ChangePasswordPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
+import OnboardingPage from "./pages/auth/OnboardingPage";
 import HashtagPage from "./pages/posts/HashtagPage";
 import NotificationPreferencesPage from "./pages/settings/NotificationPreferencesPage";
 import SearchPage from "./pages/search/SearchPage";
 import CreatePostPage from "./pages/posts/CreatePostPage";
 import BlockedMutedPage from "./pages/settings/BlockedMutedPage";
+import AIModelsPage from "./pages/ai/AIModelsPage";
+import AIVotePage from "./pages/ai/AIVotePage";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 
 const queryClient = new QueryClient({
@@ -43,6 +46,8 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/user/:userId" element={<ProfilePage />} />
+            <Route path="/ai/models" element={<AIModelsPage />} />
+            <Route path="/ai/vote" element={<AIVotePage />} />
 
             {/* Guest only routes */}
             <Route element={<GuestRoute />}>
@@ -62,6 +67,7 @@ export default function App() {
 
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
+              <Route path="/onboarding" element={<OnboardingPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/hashtag/:name" element={<HashtagPage />} />

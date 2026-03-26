@@ -117,3 +117,16 @@ export function useResetPassword() {
     mutationFn: (data) => authAPI.resetPassword(data),
   });
 }
+
+export function useCompleteOnboarding() {
+  const { setUser } = useAuthStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => authAPI.completeOnboarding(data),
+    onSuccess: ({ data }) => {
+      setUser(data);
+      queryClient.setQueryData(["user"], data);
+    },
+  });
+}

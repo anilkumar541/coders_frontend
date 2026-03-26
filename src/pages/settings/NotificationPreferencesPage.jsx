@@ -24,14 +24,14 @@ export default function NotificationPreferencesPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-lg mx-auto py-8 px-4">
+      <div className="max-w-lg mx-auto py-8 px-2 sm:px-4">
         <p className="text-sm text-gray-400">Loading preferences...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto py-8 px-4">
+    <div className="max-w-lg mx-auto py-8 px-2 sm:px-4">
       <h1 className="text-lg font-semibold text-gray-900 mb-6">
         Notification Preferences
       </h1>

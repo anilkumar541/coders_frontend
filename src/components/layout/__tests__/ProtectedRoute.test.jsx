@@ -23,7 +23,7 @@ describe("ProtectedRoute", () => {
   });
 
   it("renders child route when authenticated", () => {
-    setAuthState("test-token", { username: "testuser" });
+    setAuthState("test-token", { username: "testuser", onboarding_completed: true });
     renderWithProviders(
       <Routes>
         <Route element={<ProtectedRoute />}>
@@ -33,5 +33,32 @@ describe("ProtectedRoute", () => {
       { route: "/dashboard" }
     );
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
+  });
+
+  it("redirects to /onboarding when onboarding_completed is false", () => {
+    setAuthState("test-token", { username: "newuser", onboarding_completed: false });
+    renderWithProviders(
+      <Routes>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<div>Dashboard</div>} />
+        </Route>
+        <Route path="/onboarding" element={<div>Onboarding Page</div>} />
+      </Routes>,
+      { route: "/dashboard" }
+    );
+    expect(screen.getByText("Onboarding Page")).toBeInTheDocument();
+  });
+
+  it("does not redirect to onboarding when already on /onboarding", () => {
+    setAuthState("test-token", { username: "newuser", onboarding_completed: false });
+    renderWithProviders(
+      <Routes>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/onboarding" element={<div>Onboarding Page</div>} />
+        </Route>
+      </Routes>,
+      { route: "/onboarding" }
+    );
+    expect(screen.getByText("Onboarding Page")).toBeInTheDocument();
   });
 });

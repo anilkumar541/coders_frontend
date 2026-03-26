@@ -71,4 +71,27 @@ describe("PostContent", () => {
     expect(screen.getByText("#django")).toBeInTheDocument();
     expect(screen.getByText("#react")).toBeInTheDocument();
   });
+
+  it("renders a fenced code block with a Copy button", () => {
+    renderWithRouter(
+      <PostContent content={"```javascript\nconsole.log('hello')\n```"} />
+    );
+    expect(screen.getByText("Copy")).toBeInTheDocument();
+    expect(screen.getByText("javascript")).toBeInTheDocument();
+  });
+
+  it("renders text before and after a code block", () => {
+    renderWithRouter(
+      <PostContent content={"Here is code:\n```python\nprint('hi')\n```\nDone."} />
+    );
+    expect(screen.getByText(/Here is code/)).toBeInTheDocument();
+    expect(screen.getByText(/Done/)).toBeInTheDocument();
+    expect(screen.getByText("Copy")).toBeInTheDocument();
+  });
+
+  it("does not apply See more truncation to posts with code blocks", () => {
+    const longCodePost = "```python\n" + "x = 1\n".repeat(50) + "```";
+    renderWithRouter(<PostContent content={longCodePost} />);
+    expect(screen.queryByText("See more")).not.toBeInTheDocument();
+  });
 });

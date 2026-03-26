@@ -47,6 +47,8 @@ const mockPost = {
   visibility: "public",
   status: "active",
   is_edited: false,
+  category: "general",
+  source_url: "",
   like_count: 5,
   comment_count: 2,
   view_count: 100,
@@ -257,5 +259,38 @@ describe("PostCard", () => {
     renderWithProviders(<PostCard post={mockPost} />);
     const link = screen.getByRole("link", { name: "testuser" });
     expect(link).toHaveAttribute("href", "/user/1");
+  });
+
+  it("shows AI Update category badge for ai_update posts", () => {
+    renderWithProviders(<PostCard post={{ ...mockPost, category: "ai_update" }} />);
+    expect(screen.getByText("AI Update")).toBeInTheDocument();
+  });
+
+  it("shows Tutorial badge for tutorial posts", () => {
+    renderWithProviders(<PostCard post={{ ...mockPost, category: "tutorial" }} />);
+    expect(screen.getByText("Tutorial")).toBeInTheDocument();
+  });
+
+  it("shows Benchmark badge for benchmark posts", () => {
+    renderWithProviders(<PostCard post={{ ...mockPost, category: "benchmark" }} />);
+    expect(screen.getByText("Benchmark")).toBeInTheDocument();
+  });
+
+  it("does not show a category badge for general posts", () => {
+    renderWithProviders(<PostCard post={{ ...mockPost, category: "general" }} />);
+    expect(screen.queryByText("General")).not.toBeInTheDocument();
+  });
+
+  it("shows Source link when source_url is set", () => {
+    renderWithProviders(
+      <PostCard post={{ ...mockPost, source_url: "https://example.com/article" }} />
+    );
+    const link = screen.getByText("Source");
+    expect(link.closest("a")).toHaveAttribute("href", "https://example.com/article");
+  });
+
+  it("does not show Source link when source_url is empty", () => {
+    renderWithProviders(<PostCard post={{ ...mockPost, source_url: "" }} />);
+    expect(screen.queryByText("Source")).not.toBeInTheDocument();
   });
 });

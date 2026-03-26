@@ -26,8 +26,13 @@ import {
   VolumeX,
   UserPlus,
   UserMinus,
+  ExternalLink,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+
+const CATEGORY_BADGE = {
+  ai_update: { label: "AI Update", className: "bg-violet-100 text-violet-700" },
+};
 
 export default function PostCard({ post, onDeleted }) {
   const user = useAuthStore((s) => s.user);
@@ -208,6 +213,30 @@ export default function PostCard({ post, onDeleted }) {
           </div>
         )}
       </div>
+
+      {/* Category badge + Source chip */}
+      {(CATEGORY_BADGE[post.category] || post.source_url) && (
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          {CATEGORY_BADGE[post.category] && (
+            <span
+              className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${CATEGORY_BADGE[post.category].className}`}
+            >
+              {CATEGORY_BADGE[post.category].label}
+            </span>
+          )}
+          {post.source_url && (
+            <a
+              href={post.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-[11px] text-gray-500 hover:text-indigo-600 transition-colors"
+            >
+              <ExternalLink size={11} />
+              <span>Source</span>
+            </a>
+          )}
+        </div>
+      )}
 
       {/* Content */}
       <PostContent content={post.content} mentions={post.mentions} />

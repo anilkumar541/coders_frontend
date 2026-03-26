@@ -13,6 +13,9 @@ import {
   AlertCircle,
   Send,
   Film,
+  Code2,
+  Link as LinkIcon,
+  Tag,
 } from "lucide-react";
 
 const MAX_CHARS = 1000;
@@ -30,6 +33,17 @@ const VISIBILITY_OPTIONS = [
   { value: "private", label: "Only me", icon: Lock },
 ];
 
+const CATEGORY_OPTIONS = [
+  { value: "general", label: "General" },
+  { value: "ai_update", label: "AI Update" },
+];
+
+const CATEGORY_COLORS = {
+  ai_update: "bg-violet-100 text-violet-700 border-violet-200",
+
+  general: "bg-gray-100 text-gray-600 border-gray-200",
+};
+
 function loadDraft() {
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
@@ -40,12 +54,15 @@ function loadDraft() {
   }
 }
 
-function saveDraft(content, visibility) {
+function saveDraft(content, visibility, category, sourceUrl) {
   if (!content.trim()) {
     localStorage.removeItem(DRAFT_KEY);
     return;
   }
-  localStorage.setItem(DRAFT_KEY, JSON.stringify({ content, visibility, savedAt: Date.now() }));
+  localStorage.setItem(
+    DRAFT_KEY,
+    JSON.stringify({ content, visibility, category, sourceUrl, savedAt: Date.now() })
+  );
 }
 
 function clearDraft() {
@@ -99,6 +116,9 @@ export default function CreatePostBox({ onPostCreated }) {
   const draft = loadDraft();
   const [content, setContent] = useState(draft?.content || "");
   const [visibility, setVisibility] = useState(draft?.visibility || "public");
+  const [category, setCategory] = useState(draft?.category || "general");
+  const [sourceUrl, setSourceUrl] = useState(draft?.sourceUrl || "");
+  const [showSourceUrl, setShowSourceUrl] = useState(!!(draft?.sourceUrl));
   const [mediaFiles, setMediaFiles] = useState([]);
   const [draftStatus, setDraftStatus] = useState(draft ? "Draft restored" : "");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -131,14 +151,14 @@ export default function CreatePostBox({ onPostCreated }) {
   useEffect(() => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
-      saveDraft(content, visibility);
+      saveDraft(content, visibility, category, sourceUrl);
       if (content.trim()) {
         setDraftStatus("Draft saved");
         setTimeout(() => setDraftStatus(""), 2000);
       }
     }, AUTO_SAVE_DELAY);
     return () => clearTimeout(saveTimerRef.current);
-  }, [content, visibility]);
+  }, [content, visibility, category, sourceUrl]);
 
   // Clear "Draft restored" message
   useEffect(() => {
@@ -147,6 +167,24 @@ export default function CreatePostBox({ onPostCreated }) {
       return () => clearTimeout(t);
     }
   }, [draftStatus]);
+
+  // Insert a fenced code block at cursor position
+  const insertCodeBlock = () => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = content.slice(start, end);
+    const snippet = `\`\`\`javascript\n${selected || "// your code here"}\n\`\`\``;
+    const newContent = content.slice(0, start) + snippet + content.slice(end);
+    setContent(newContent);
+    // Move cursor inside the code block, after the language identifier
+    setTimeout(() => {
+      const newPos = start + "```javascript\n".length;
+      ta.focus();
+      ta.setSelectionRange(newPos, newPos + (selected || "// your code here").length);
+    }, 0);
+  };
 
   const validateAndAddFiles = useCallback((selected) => {
     setMediaError("");
@@ -292,29 +330,40 @@ export default function CreatePostBox({ onPostCreated }) {
       const existingIds = mediaFiles.filter((f) => f.mediaId).map((f) => f.mediaId);
       const allMediaIds = [...existingIds, ...media_ids];
 
-      createMutation.mutate(
-        { content: content.trim(), visibility, media_ids: allMediaIds },
-        {
-          onSuccess: () => {
-            setContent("");
-            setVisibility("public");
-            setMediaFiles([]);
-            clearDraft();
-            setDraftStatus("");
-            setIsSubmitting(false);
-            setSubmitError("");
-            onPostCreated?.();
-          },
-          onError: (error) => {
-            setSubmitError(
-              error?.response?.data?.content?.[0] ||
-              error?.response?.data?.detail ||
-              "Failed to create post."
-            );
-            setIsSubmitting(false);
-          },
-        }
-      );
+      const postData = {
+        content: content.trim(),
+        visibility,
+        category,
+        media_ids: allMediaIds,
+      };
+      if (sourceUrl.trim()) {
+        postData.source_url = sourceUrl.trim();
+      }
+
+      createMutation.mutate(postData, {
+        onSuccess: () => {
+          setContent("");
+          setVisibility("public");
+          setCategory("general");
+          setSourceUrl("");
+          setShowSourceUrl(false);
+          setMediaFiles([]);
+          clearDraft();
+          setDraftStatus("");
+          setIsSubmitting(false);
+          setSubmitError("");
+          onPostCreated?.();
+        },
+        onError: (error) => {
+          setSubmitError(
+            error?.response?.data?.content?.[0] ||
+            error?.response?.data?.source_url?.[0] ||
+            error?.response?.data?.detail ||
+            "Failed to create post."
+          );
+          setIsSubmitting(false);
+        },
+      });
     } catch {
       setSubmitError("Something went wrong. Please try again.");
       setIsSubmitting(false);
@@ -349,6 +398,29 @@ export default function CreatePostBox({ onPostCreated }) {
             className="w-full resize-none text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none leading-relaxed min-h-[120px]"
           />
         </div>
+
+        {/* Source URL field */}
+        {showSourceUrl && (
+          <div className="px-4 pb-2">
+            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+              <LinkIcon size={14} className="text-gray-400 flex-shrink-0" />
+              <input
+                type="url"
+                value={sourceUrl}
+                onChange={(e) => setSourceUrl(e.target.value)}
+                placeholder="https://source.example.com/article"
+                className="flex-1 text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent min-w-0"
+              />
+              <button
+                type="button"
+                onClick={() => { setShowSourceUrl(false); setSourceUrl(""); }}
+                className="text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Media previews */}
         {mediaFiles.length > 0 && (
@@ -441,6 +513,47 @@ export default function CreatePostBox({ onPostCreated }) {
                 <span className="text-xs hidden sm:inline">Media</span>
               </button>
             )}
+
+            {/* Insert code block */}
+            <button
+              type="button"
+              onClick={insertCodeBlock}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
+              aria-label="Insert code block"
+              title="Insert code block"
+            >
+              <Code2 size={18} />
+              <span className="text-xs hidden sm:inline">Code</span>
+            </button>
+
+            {/* Source URL toggle */}
+            {!showSourceUrl && (
+              <button
+                type="button"
+                onClick={() => setShowSourceUrl(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
+                aria-label="Add source URL"
+                title="Add source URL"
+              >
+                <LinkIcon size={18} />
+                <span className="text-xs hidden sm:inline">Source</span>
+              </button>
+            )}
+
+            {/* Category */}
+            <div className="relative">
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="appearance-none pl-7 pr-6 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors focus:outline-none bg-transparent"
+              >
+                <option value="general">General</option>
+                <option value="ai_update">AI Update</option>
+
+              </select>
+              <Tag size={13} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            </div>
 
             {/* Visibility */}
             <div className="relative">

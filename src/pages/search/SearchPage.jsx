@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import TrendingSidebar from "../../components/posts/TrendingSidebar";
+import AIToolVoteCard from "../../components/dashboard/AIToolVoteCard";
 import { useSearchPosts } from "../../hooks/usePosts";
 import { postsAPI } from "../../api/posts";
 import { useQuery } from "@tanstack/react-query";
@@ -37,7 +39,8 @@ export default function SearchPage() {
   const hashtags = hashtagsResult.data?.data || [];
 
   return (
-    <div className="max-w-2xl mx-auto py-6 px-4">
+    <div className="max-w-6xl w-full mx-auto mt-3 px-2 sm:px-4 pb-16 flex gap-6">
+      <div className="flex-1 min-w-0">
       {/* Search input */}
       <div className="mb-4">
         <input
@@ -156,6 +159,13 @@ export default function SearchPage() {
           ))}
         </div>
       )}
+      </div>
+
+      {/* Desktop sidebar */}
+      <div className="hidden lg:block w-80 shrink-0 space-y-4">
+        <AIToolVoteCard />
+        <TrendingSidebar />
+      </div>
     </div>
   );
 }
