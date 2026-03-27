@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { getAvatarStyle } from "../../utils/avatarColor";
 
@@ -69,7 +69,7 @@ export default function HomePage() {
   const accessToken = useAuthStore((s) => s.accessToken);
 
   if (accessToken) {
-    return null;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (

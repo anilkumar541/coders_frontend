@@ -298,11 +298,24 @@ function CommentForm({
 }
 
 /** Lazy-loaded replies list */
-function ReplyList({ postId, parentId }) {
+function ReplyList({ postId, parentId, targetCommentId }) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useComments(postId, parentId);
 
   const replies = data?.pages?.flatMap((p) => p.data.results) || [];
+
+  // After replies load, scroll to target reply if present
+  useEffect(() => {
+    if (!targetCommentId || !replies.length) return;
+    const el = document.querySelector(`[data-comment-id="${targetCommentId}"]`);
+    if (el) {
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-indigo-400", "rounded-xl", "transition-all");
+        setTimeout(() => el.classList.remove("ring-2", "ring-indigo-400", "rounded-xl"), 2500);
+      }, 100);
+    }
+  }, [replies, targetCommentId]);
 
   if (isLoading) {
     return (
@@ -322,6 +335,7 @@ function ReplyList({ postId, parentId }) {
           postId={postId}
           depth={1}
           rootId={parentId}
+          targetCommentId={targetCommentId}
         />
       ))}
       {hasNextPage && (
@@ -338,14 +352,31 @@ function ReplyList({ postId, parentId }) {
 }
 
 /** A single comment or reply */
-function CommentItem({ comment, postId, depth = 0, rootId = null }) {
+function CommentItem({ comment, postId, depth = 0, rootId = null, targetCommentId, targetParentId }) {
   const user = useAuthStore((s) => s.user);
   const isOwner = user?.id === comment.author.id;
+
+  const isTarget = comment.id === targetCommentId;
+  // Auto-expand this comment's replies if it is the parent of the target reply
+  const isTargetParent = depth === 0 && comment.id === targetParentId;
 
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const [replyOpen, setReplyOpen] = useState(false);
-  const [showReplies, setShowReplies] = useState(false);
+  const [showReplies, setShowReplies] = useState(isTargetParent);
+
+  // Scroll to and highlight this comment if it is the direct target
+  const commentRef = useRef(null);
+  useEffect(() => {
+    if (!isTarget || !commentRef.current) return;
+    setTimeout(() => {
+      commentRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      commentRef.current.classList.add("ring-2", "ring-indigo-400", "rounded-xl", "transition-all");
+      setTimeout(() => {
+        commentRef.current?.classList.remove("ring-2", "ring-indigo-400", "rounded-xl");
+      }, 2500);
+    }, 150);
+  }, [isTarget]);
 
   const editMutation = useEditComment(postId);
   const deleteMutation = useDeleteComment(postId);
@@ -373,7 +404,11 @@ function CommentItem({ comment, postId, depth = 0, rootId = null }) {
   const hasRepliesSection = depth === 0 && (replyOpen || showReplies);
 
   return (
-    <div className={`flex gap-2.5 ${depth > 0 ? "" : ""}`}>
+    <div
+      ref={commentRef}
+      data-comment-id={comment.id}
+      className={`flex gap-2.5 ${depth > 0 ? "" : ""}`}
+    >
       {/* Avatar column */}
       <div className="flex flex-col items-center shrink-0">
         <Avatar author={comment.author} size={depth === 0 ? "md" : "sm"} />
@@ -560,14 +595,18 @@ function CommentItem({ comment, postId, depth = 0, rootId = null }) {
 
         {/* Replies list */}
         {showReplies && depth === 0 && (
-          <ReplyList postId={postId} parentId={comment.id} />
+          <ReplyList
+            postId={postId}
+            parentId={comment.id}
+            targetCommentId={isTargetParent ? targetCommentId : undefined}
+          />
         )}
       </div>
     </div>
   );
 }
 
-export default function CommentSection({ postId }) {
+export default function CommentSection({ postId, targetCommentId, targetParentId }) {
   const user = useAuthStore((s) => s.user);
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useComments(postId, undefined);
@@ -596,7 +635,13 @@ export default function CommentSection({ postId }) {
       {!isLoading && comments.length > 0 && (
         <div className="space-y-5">
           {comments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} postId={postId} />
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              postId={postId}
+              targetCommentId={targetCommentId}
+              targetParentId={targetParentId}
+            />
           ))}
         </div>
       )}

@@ -255,6 +255,16 @@ describe("PostCard", () => {
     expect(screen.queryByText("Unfollow")).not.toBeInTheDocument();
   });
 
+  it("auto-opens comment modal when targetCommentId is provided", async () => {
+    renderWithProviders(<PostCard post={mockPost} targetCommentId="cmt-42" />);
+    expect(await screen.findByLabelText("Close comments")).toBeInTheDocument();
+  });
+
+  it("does not auto-open comment modal when targetCommentId is absent", () => {
+    renderWithProviders(<PostCard post={mockPost} />);
+    expect(screen.queryByLabelText("Close comments")).not.toBeInTheDocument();
+  });
+
   it("username is a link to public profile", () => {
     renderWithProviders(<PostCard post={mockPost} />);
     const link = screen.getByRole("link", { name: "testuser" });

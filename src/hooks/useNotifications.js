@@ -20,7 +20,9 @@ export function useUnreadCount() {
   return useQuery({
     queryKey: ["unreadCount"],
     queryFn: () => notificationsAPI.getUnreadCount(),
-    refetchInterval: 30000, // Poll every 30 seconds
+    // WebSocket is the primary update mechanism; poll infrequently as a fallback
+    // for cases where the WS connection is temporarily unavailable.
+    refetchInterval: 5 * 60 * 1000, // 5 minutes
   });
 }
 

@@ -13,7 +13,6 @@ import {
   AlertCircle,
   Send,
   Film,
-  Code2,
   Link as LinkIcon,
   Tag,
 } from "lucide-react";
@@ -167,24 +166,6 @@ export default function CreatePostBox({ onPostCreated }) {
       return () => clearTimeout(t);
     }
   }, [draftStatus]);
-
-  // Insert a fenced code block at cursor position
-  const insertCodeBlock = () => {
-    const ta = textareaRef.current;
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    const selected = content.slice(start, end);
-    const snippet = `\`\`\`javascript\n${selected || "// your code here"}\n\`\`\``;
-    const newContent = content.slice(0, start) + snippet + content.slice(end);
-    setContent(newContent);
-    // Move cursor inside the code block, after the language identifier
-    setTimeout(() => {
-      const newPos = start + "```javascript\n".length;
-      ta.focus();
-      ta.setSelectionRange(newPos, newPos + (selected || "// your code here").length);
-    }, 0);
-  };
 
   const validateAndAddFiles = useCallback((selected) => {
     setMediaError("");
@@ -513,18 +494,6 @@ export default function CreatePostBox({ onPostCreated }) {
                 <span className="text-xs hidden sm:inline">Media</span>
               </button>
             )}
-
-            {/* Insert code block */}
-            <button
-              type="button"
-              onClick={insertCodeBlock}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
-              aria-label="Insert code block"
-              title="Insert code block"
-            >
-              <Code2 size={18} />
-              <span className="text-xs hidden sm:inline">Code</span>
-            </button>
 
             {/* Source URL toggle */}
             {!showSourceUrl && (

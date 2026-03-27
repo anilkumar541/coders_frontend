@@ -449,3 +449,12 @@ export function usePublicProfile(userId) {
   });
 }
 
+
+
+export function usePost(id) {
+  return useQuery({
+    queryKey: ["post", id],
+    queryFn: () => postsAPI.getPost(id),
+    enabled: !!id,
+  });
+}

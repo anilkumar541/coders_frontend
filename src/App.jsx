@@ -18,11 +18,13 @@ import OnboardingPage from "./pages/auth/OnboardingPage";
 import HashtagPage from "./pages/posts/HashtagPage";
 import NotificationPreferencesPage from "./pages/settings/NotificationPreferencesPage";
 import SearchPage from "./pages/search/SearchPage";
-import CreatePostPage from "./pages/posts/CreatePostPage";
 import BlockedMutedPage from "./pages/settings/BlockedMutedPage";
+import CreatePostPage from "./pages/posts/CreatePostPage";
 import AIModelsPage from "./pages/ai/AIModelsPage";
 import AIVotePage from "./pages/ai/AIVotePage";
+import PostDetailPage from "./pages/posts/PostDetailPage";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import NotificationSocketProvider from "./components/notifications/NotificationSocketProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +40,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthInit>
+        <NotificationSocketProvider />
         <div className="min-h-screen">
           <Navbar />
           <ErrorBoundary>
@@ -48,6 +51,7 @@ export default function App() {
             <Route path="/user/:userId" element={<ProfilePage />} />
             <Route path="/ai/models" element={<AIModelsPage />} />
             <Route path="/ai/vote" element={<AIVotePage />} />
+            <Route path="/post/:id" element={<PostDetailPage />} />
 
             {/* Guest only routes */}
             <Route element={<GuestRoute />}>

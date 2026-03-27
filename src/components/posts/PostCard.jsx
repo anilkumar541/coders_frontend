@@ -34,7 +34,7 @@ const CATEGORY_BADGE = {
   ai_update: { label: "AI Update", className: "bg-violet-100 text-violet-700" },
 };
 
-export default function PostCard({ post, onDeleted }) {
+export default function PostCard({ post, onDeleted, targetCommentId, targetParentId }) {
   const user = useAuthStore((s) => s.user);
   const isOwner = user?.id === post.author.id;
 
@@ -43,7 +43,8 @@ export default function PostCard({ post, onDeleted }) {
   const [deleted, setDeleted] = useState(false);
   const [undoTimer, setUndoTimer] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
-  const [showComments, setShowComments] = useState(false);
+  // Auto-open comment modal when navigated from a notification with a comment target
+  const [showComments, setShowComments] = useState(!!targetCommentId);
 
   const menuRef = useRef(null);
   const cardRef = useRef(null);
@@ -327,7 +328,12 @@ export default function PostCard({ post, onDeleted }) {
 
       {/* Comment Modal */}
       {showComments && (
-        <CommentModal post={post} onClose={() => setShowComments(false)} />
+        <CommentModal
+          post={post}
+          onClose={() => setShowComments(false)}
+          targetCommentId={targetCommentId}
+          targetParentId={targetParentId}
+        />
       )}
 
       {/* Report Modal */}

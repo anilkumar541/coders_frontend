@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import CommentSection from "./CommentSection";
 
-export default function CommentModal({ post, onClose }) {
+export default function CommentModal({ post, onClose, targetCommentId, targetParentId }) {
   const overlayRef = useRef(null);
 
   // Lock scroll + keyboard close
@@ -50,7 +50,11 @@ export default function CommentModal({ post, onClose }) {
 
         {/* Scrollable comments */}
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-6 pt-2">
-          <CommentSection postId={post.id} />
+          <CommentSection
+            postId={post.id}
+            targetCommentId={targetCommentId}
+            targetParentId={targetParentId}
+          />
         </div>
       </div>
     </div>
