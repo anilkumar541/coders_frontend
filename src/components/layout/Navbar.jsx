@@ -5,14 +5,15 @@ import { useLogout } from "../../hooks/useAuth";
 import NotificationBell from "../notifications/NotificationBell";
 import Avatar from "../common/Avatar";
 import {
-  Menu, X, Home, Bot, PenSquare, User, Bell, LogOut, Settings,
+  Menu, X, Home, Bot, PenSquare, User, Bell, LogOut, Settings, Activity,
 } from "lucide-react";
 
 export { Avatar };
 
 const NAV_LINKS = [
   { to: "/dashboard", label: "Home",   icon: Home },
-  { to: "/ai/models", label: "AI Hub", icon: Bot,       match: "/ai/" },
+  { to: "/ai/models", label: "AI Hub", icon: Bot,      match: "/ai/" },
+  { to: "/pulse",     label: "Pulse",  icon: Activity, match: "/pulse" },
   { to: "/create",    label: "Create", icon: PenSquare },
 ];
 

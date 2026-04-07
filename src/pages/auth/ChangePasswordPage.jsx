@@ -25,7 +25,7 @@ export default function ChangePasswordPage() {
   const errors = changeMutation.error?.response?.data;
 
   return (
-    <div className="max-w-md mx-auto mt-16 px-4">
+    <div className="max-w-md mx-auto mt-16 px-2 sm:px-4">
       <h1 className="text-2xl font-semibold text-gray-900 text-center mb-8">
         Change password
       </h1>

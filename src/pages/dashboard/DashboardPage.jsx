@@ -160,7 +160,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="max-w-6xl w-full mx-auto mt-3 px-4 pb-16 flex gap-6">
+      <div className="max-w-6xl w-full mx-auto mt-3 px-2 sm:px-4 pb-16 flex gap-6">
         <div className="flex-1 min-w-0">
           <FeedTabs
             active={activeTab}

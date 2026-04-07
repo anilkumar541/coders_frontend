@@ -23,6 +23,8 @@ import CreatePostPage from "./pages/posts/CreatePostPage";
 import AIModelsPage from "./pages/ai/AIModelsPage";
 import AIVotePage from "./pages/ai/AIVotePage";
 import PostDetailPage from "./pages/posts/PostDetailPage";
+import PulsePage from "./pages/pulse/PulsePage";
+import EntityDetailPage from "./pages/pulse/EntityDetailPage";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import NotificationSocketProvider from "./components/notifications/NotificationSocketProvider";
 
@@ -52,6 +54,8 @@ export default function App() {
             <Route path="/ai/models" element={<AIModelsPage />} />
             <Route path="/ai/vote" element={<AIVotePage />} />
             <Route path="/post/:id" element={<PostDetailPage />} />
+            <Route path="/pulse" element={<PulsePage />} />
+            <Route path="/pulse/:entity" element={<EntityDetailPage />} />
 
             {/* Guest only routes */}
             <Route element={<GuestRoute />}>

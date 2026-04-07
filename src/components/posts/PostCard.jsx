@@ -129,15 +129,22 @@ export default function PostCard({ post, onDeleted, targetCommentId, targetParen
         <div className="flex items-center gap-3">
           <Avatar user={post.author} size="md" className="shrink-0" />
           <div>
-            <Link
-              to={`/user/${post.author.id}`}
-              className="text-sm font-medium text-gray-900 hover:underline"
-            >
-              {post.author.username}
-            </Link>
-            <span className="text-xs text-gray-400 ml-2">
-              {timeAgo(post.created_at)}
-            </span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Link
+                to={`/user/${post.author.id}`}
+                className="text-sm font-medium text-gray-900 hover:underline"
+              >
+                {post.author.username}
+              </Link>
+              <span className="text-xs text-gray-400">
+                {timeAgo(post.created_at)}
+              </span>
+            </div>
+            {post.author.title && (
+              <p className="text-xs text-gray-400 leading-tight mt-0.5">
+                {post.author.title.length > 60 ? post.author.title.slice(0, 60) + "…" : post.author.title}
+              </p>
+            )}
             {post.is_edited && (
               <button
                 onClick={() => setShowHistory(true)}
